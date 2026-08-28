@@ -2,11 +2,21 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(request: Request) {
   try {
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Missing or invalid API key format. Use: Bearer YOUR_API_KEY' }, { status: 401 });
+      return NextResponse.json({ error: 'Missing or invalid API key format. Use: Bearer YOUR_API_KEY' }, { status: 401, headers: corsHeaders });
     }
 
     const apiKey = authHeader.split(' ')[1];
@@ -16,7 +26,7 @@ export async function POST(request: Request) {
     const keysSnapshot = await getDocs(keysQuery);
     
     if (keysSnapshot.empty) {
-      return NextResponse.json({ error: 'Unauthorized: Invalid API Key.' }, { status: 403 });
+      return NextResponse.json({ error: 'Unauthorized: Invalid API Key.' }, { status: 403, headers: corsHeaders });
     }
     
     const ownerUserId = keysSnapshot.docs[0].data().userId;
@@ -41,8 +51,8 @@ export async function POST(request: Request) {
       success: true, 
       orderId: orderRef.id, 
       message: 'Order successfully sent to Kalvix Nexus POS. Waiting for restaurant approval.' 
-    });
+    }, { headers: corsHeaders });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
   }
 }
