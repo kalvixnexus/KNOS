@@ -262,41 +262,6 @@ export default function ManualBilling() {
             )}
           </div>
         </div>
-
-        {/* Received QR Orders Section */}
-        <div className="mt-8 bg-gray-900 p-6 rounded-xl shadow-lg border border-yellow-500/30 hide-on-print">
-          <h2 className="text-xl font-bold text-yellow-500 uppercase tracking-widest mb-4 flex justify-between items-center">
-            <span>Dine-In Orders (QR)</span>
-            <span className="bg-yellow-500 text-black px-3 py-1 rounded-full text-xs font-black">{qrOrders.length} New</span>
-          </h2>
-          
-          {qrOrders.length === 0 ? (
-            <div className="text-gray-500 text-sm text-center py-8 border border-dashed border-gray-800 rounded-lg">No incoming orders from tables right now.</div>
-          ) : (
-            <div className="space-y-4">
-              {qrOrders.map(order => (
-                <div key={order.id} className="bg-black border border-yellow-500/50 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="bg-yellow-500 text-black font-black px-2 py-0.5 rounded text-xs uppercase tracking-widest">Table {order.tableNo}</span>
-                      <span className="text-white font-bold">{order.customerName}</span>
-                    </div>
-                    <div className="text-gray-400 text-sm">
-                      {order.items.length} items • ₹{order.totalAmount} • {order.paymentMode}
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => handleApproveQrOrder(order)}
-                    className="bg-yellow-500 hover:bg-yellow-400 text-black px-6 py-2 rounded font-bold uppercase tracking-widest text-sm transition-colors shadow whitespace-nowrap"
-                  >
-                    Accept & History
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
       </div>
 
       {/* Thermal Receipt Print Area */}
