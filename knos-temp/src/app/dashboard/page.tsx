@@ -134,8 +134,22 @@ export default function Dashboard() {
                   <tr key={keyObj.id} className="hover:bg-gray-800/50 transition-colors">
                     <td className="px-6 py-4 font-bold text-white">{keyObj.name}</td>
                     <td className="px-6 py-4">
-                      <div className="font-mono text-xs text-yellow-500 bg-yellow-500/10 px-3 py-1 rounded inline-block border border-yellow-500/20">
-                        {keyObj.key}
+                      <div className="flex items-center gap-2">
+                        <div className="font-mono text-xs text-yellow-500 bg-yellow-500/10 px-3 py-1 rounded inline-block border border-yellow-500/20">
+                          {keyObj.key}
+                        </div>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(keyObj.key);
+                            alert('API Key copied to clipboard!');
+                          }}
+                          className="text-gray-400 hover:text-yellow-500 transition-colors p-1"
+                          title="Copy API Key"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </button>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-400">
@@ -159,21 +173,74 @@ export default function Dashboard() {
 
       {/* Developer Instructions */}
       <div className="p-6 bg-gray-900 border border-yellow-500/30 rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.05)]">
-        <h3 className="font-bold text-lg mb-2 text-yellow-500 uppercase tracking-widest">Developer Instructions</h3>
-        <p className="text-sm text-gray-400 mb-4">Send orders from your public website to this POS automatically using your unique API Key.</p>
-        <div className="bg-black border border-gray-800 p-4 rounded-md font-mono text-xs text-gray-300 overflow-x-auto">
-          <code>
-            <span className="text-blue-400">POST</span> /api/external/orders<br/><br/>
-            Headers: {'{\n'}
-            {'  '}"Authorization": "Bearer <span className="text-yellow-500">YOUR_API_KEY</span>",<br/>
-            {'  '}"Content-Type": "application/json"<br/>
-            {'}\n'}<br/>
-            Body: {'{\n'}
-            {'  '}"customerName": "Rahul Sharma",<br/>
-            {'  '}"totalAmount": 700,<br/>
-            {'  '}"items": [...]<br/>
-            {'}'}
-          </code>
+        <h3 className="font-bold text-lg mb-2 text-yellow-500 uppercase tracking-widest flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          Developer Instructions
+        </h3>
+        <p className="text-sm text-gray-400 mb-4">
+          Send orders from your public website to this POS automatically using your unique API Key.
+        </p>
+        
+        <div className="relative group">
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button 
+              onClick={() => {
+                const code = `POST /api/external/orders
+Headers: {
+  "Authorization": "Bearer ${apiKeys.length > 0 ? apiKeys[apiKeys.length - 1].key : 'YOUR_API_KEY'}",
+  "Content-Type": "application/json"
+}
+Body: {
+  "customerName": "Rahul Sharma",
+  "customerPhone": "9876543210",
+  "paymentMode": "Online",
+  "totalAmount": 700,
+  "items": [
+    { "id": 1, "name": "Pizza", "price": 300, "qty": 2 },
+    { "id": 2, "name": "Cold Drink", "price": 50, "qty": 2 }
+  ]
+}`;
+                navigator.clipboard.writeText(code);
+                alert('Code snippet copied!');
+              }}
+              className="bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-md border border-gray-700 text-xs font-bold flex items-center gap-1 shadow-lg transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              COPY CODE
+            </button>
+          </div>
+          <div className="bg-black border border-gray-800 p-5 rounded-md font-mono text-sm text-gray-300 overflow-x-auto shadow-inner">
+            <div className="text-gray-500 mb-2">// cURL or Fetch POST Request</div>
+            <div>
+              <span className="text-blue-400 font-bold">POST</span> <span className="text-green-400">/api/external/orders</span>
+            </div>
+            <br/>
+            <div className="text-pink-400">Headers: {'{'}</div>
+            <div className="pl-4">
+              <span className="text-blue-300">"Authorization"</span>: <span className="text-yellow-200">"Bearer <span className={apiKeys.length > 0 ? "text-yellow-500 font-bold" : "text-gray-500"}>{apiKeys.length > 0 ? apiKeys[apiKeys.length - 1].key : 'YOUR_API_KEY'}</span>"</span>,<br/>
+              <span className="text-blue-300">"Content-Type"</span>: <span className="text-yellow-200">"application/json"</span>
+            </div>
+            <div className="text-pink-400">{'}'}</div>
+            <br/>
+            <div className="text-pink-400">Body: {'{'}</div>
+            <div className="pl-4">
+              <span className="text-blue-300">"customerName"</span>: <span className="text-yellow-200">"Rahul Sharma"</span>,<br/>
+              <span className="text-blue-300">"customerPhone"</span>: <span className="text-yellow-200">"9876543210"</span>,<br/>
+              <span className="text-blue-300">"paymentMode"</span>: <span className="text-yellow-200">"Online"</span>,<br/>
+              <span className="text-blue-300">"totalAmount"</span>: <span className="text-purple-400">700</span>,<br/>
+              <span className="text-blue-300">"items"</span>: {'['}
+              <div className="pl-4">
+                {'{'} <span className="text-blue-300">"id"</span>: <span className="text-purple-400">1</span>, <span className="text-blue-300">"name"</span>: <span className="text-yellow-200">"Pizza"</span>, <span className="text-blue-300">"price"</span>: <span className="text-purple-400">300</span>, <span className="text-blue-300">"qty"</span>: <span className="text-purple-400">2</span> {'}'},<br/>
+                {'{'} <span className="text-blue-300">"id"</span>: <span className="text-purple-400">2</span>, <span className="text-blue-300">"name"</span>: <span className="text-yellow-200">"Cold Drink"</span>, <span className="text-blue-300">"price"</span>: <span className="text-purple-400">50</span>, <span className="text-blue-300">"qty"</span>: <span className="text-purple-400">2</span> {'}'}
+              </div>
+              {']'}
+            </div>
+            <div className="text-pink-400">{'}'}</div>
+          </div>
         </div>
       </div>
 

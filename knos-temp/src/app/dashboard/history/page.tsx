@@ -148,13 +148,39 @@ export default function BillHistoryPage() {
                 ))}
               </div>
 
-              <div className="border-t border-gray-800 pt-4 flex justify-between items-center">
-                <span className="text-gray-400 uppercase tracking-widest text-sm font-bold">Total Amount</span>
-                <span className="text-2xl font-black text-yellow-500">₹{selectedBill.total}</span>
+              <div className="border-t border-gray-800 pt-4">
+                {selectedBill.gstPercentage ? (
+                  <>
+                    <div className="flex justify-between items-center text-gray-400 text-sm mb-1">
+                      <span>Subtotal</span>
+                      <span>₹{selectedBill.subTotal}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-gray-400 text-sm mb-3">
+                      <span>GST ({selectedBill.gstPercentage}%)</span>
+                      <span>₹{selectedBill.gstAmount}</span>
+                    </div>
+                  </>
+                ) : null}
+                <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-800/50">
+                  <span className="text-gray-400 uppercase tracking-widest text-sm font-bold">Total Amount</span>
+                  <span className="text-2xl font-black text-yellow-500">₹{selectedBill.total}</span>
+                </div>
               </div>
             </div>
             
-            <div className="p-4 bg-black border-t border-gray-800 flex justify-end">
+            <div className="p-4 bg-black border-t border-gray-800 flex justify-between items-center">
+              <button 
+                onClick={() => {
+                  // A simple trick to print just the bill details could be 
+                  // using window.print() but we need to create a printable receipt.
+                  // For now, we will just open a new window with the receipt format or print current screen.
+                  // We can add a hidden receipt structure later, or just print current window.
+                  window.print();
+                }}
+                className="px-6 py-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500 hover:text-black rounded font-bold uppercase tracking-widest text-xs transition-colors"
+              >
+                Print Bill
+              </button>
               <button 
                 onClick={() => setSelectedBill(null)}
                 className="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded font-bold uppercase tracking-widest text-xs transition-colors"
@@ -165,6 +191,83 @@ export default function BillHistoryPage() {
           </div>
         </div>
       )}
+
+      {/* Hidden Thermal Receipt for History Print */}
+      {selectedBill && (
+        <div className="hidden-until-print printable-receipt w-80 bg-white border border-gray-300 p-4 shadow-lg font-mono text-sm text-black">
+          <div className="text-center font-bold text-xl mb-3 uppercase">KALVIX NEXUS</div>
+          <div className="border-b border-dashed border-gray-400 mb-2"></div>
+          <div className="mb-1 uppercase"><strong>Customer:</strong> {selectedBill.customerName}</div>
+          {selectedBill.customerPhone && <div className="mb-1"><strong>Phone:</strong> {selectedBill.customerPhone}</div>}
+          <div className="mb-1"><strong>Invoice No:</strong> {selectedBill.invoiceNo}</div>
+          <div className="mb-2">
+            <strong>Date:</strong> {new Date(selectedBill.date).toLocaleDateString()} {new Date(selectedBill.date).toLocaleTimeString()}
+          </div>
+          <div className="mb-2"><strong>Payment:</strong> {selectedBill.paymentMode}</div>
+          <div className="border-b border-dashed border-gray-400 mb-2"></div>
+          
+          <table className="w-full text-left mb-2">
+            <thead>
+              <tr className="border-b border-gray-300">
+                <th className="pb-1 font-normal">Item</th>
+                <th className="pb-1 font-normal text-center">Qty</th>
+                <th className="pb-1 font-normal text-right">Amt</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedBill.items?.map((item: any, idx: number) => (
+                <tr key={idx}>
+                  <td className="py-1">{item.name}</td>
+                  <td className="py-1 text-center">{item.qty}</td>
+                  <td className="py-1 text-right">₹{item.price * item.qty}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          <div className="border-b border-dashed border-gray-400 mt-2 mb-2"></div>
+          
+          {selectedBill.gstPercentage ? (
+            <>
+              <div className="flex justify-between text-sm mb-1">
+                <span>Subtotal:</span>
+                <span>₹{selectedBill.subTotal}</span>
+              </div>
+              <div className="flex justify-between text-sm mb-2">
+                <span>GST ({selectedBill.gstPercentage}%):</span>
+                <span>₹{selectedBill.gstAmount}</span>
+              </div>
+            </>
+          ) : null}
+
+          <div className="flex justify-between font-bold text-lg border-t border-dashed border-gray-400 pt-2">
+            <span>TOTAL:</span>
+            <span>₹{selectedBill.total}</span>
+          </div>
+          <div className="border-b border-dashed border-gray-400 mt-2 mb-4"></div>
+          <div className="text-center mt-2 text-xs font-bold">Thank you for visiting!</div>
+          <div className="text-center mt-4 text-[10px] text-gray-500 uppercase tracking-widest">Bill Generated by Kalvix Nexus POS</div>
+        </div>
+      )}
+
+      <style jsx global>{`
+        .hidden-until-print {
+          display: none;
+        }
+        @media print {
+          body * { visibility: hidden; }
+          .printable-receipt, .printable-receipt * { visibility: visible; display: block !important; }
+          .printable-receipt { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 80mm; 
+            padding: 5mm; 
+            border: none; 
+            box-shadow: none; 
+          }
+        }
+      `}</style>
     </div>
   );
 }

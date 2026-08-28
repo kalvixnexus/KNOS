@@ -8,6 +8,7 @@ export default function APIBilling() {
   const [userId, setUserId] = useState<string | null>(null);
   const [invoicePrefix, setInvoicePrefix] = useState('INV');
   const [restaurantName, setRestaurantName] = useState('YOUR RESTAURANT');
+  const [gstPercentage, setGstPercentage] = useState(0);
   
   const [apiOrders, setApiOrders] = useState<any[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -28,6 +29,7 @@ export default function APIBilling() {
             const data = userDoc.data();
             if (data.invoicePrefix) setInvoicePrefix(data.invoicePrefix);
             if (data.restaurantName) setRestaurantName(data.restaurantName);
+            if (data.gstPercentage !== undefined) setGstPercentage(data.gstPercentage);
           }
           // Fetch API Orders
           fetchApiOrders(user.uid);
@@ -76,6 +78,10 @@ export default function APIBilling() {
     setSaving(true);
     
     try {
+      const subTotal = selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0);
+      const gstAmount = parseFloat(((subTotal * gstPercentage) / 100).toFixed(2));
+      const total = parseFloat((subTotal + gstAmount).toFixed(2));
+
       // 1. Save to standard bills history
       await addDoc(collection(db, 'bills'), {
         userId,
@@ -84,7 +90,10 @@ export default function APIBilling() {
         customerPhone: selectedOrder.customerPhone || '',
         paymentMode,
         items: selectedOrder.items,
-        total: selectedOrder.totalAmount,
+        subTotal,
+        gstPercentage,
+        gstAmount,
+        total,
         date: new Date().toISOString()
       });
       
@@ -203,9 +212,21 @@ export default function APIBilling() {
           </table>
           
           <div className="border-b border-dashed border-gray-400 mt-2 mb-2"></div>
-          <div className="flex justify-between font-bold text-lg">
+          
+          <div className="flex justify-between text-sm mb-1">
+            <span>Subtotal:</span>
+            <span>₹{selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0)}</span>
+          </div>
+          {gstPercentage > 0 && (
+            <div className="flex justify-between text-sm mb-2">
+              <span>GST ({gstPercentage}%):</span>
+              <span>₹{parseFloat(((selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * gstPercentage) / 100).toFixed(2))}</span>
+            </div>
+          )}
+          
+          <div className="flex justify-between font-bold text-lg border-t border-dashed border-gray-400 pt-2">
             <span>TOTAL:</span>
-            <span>₹{selectedOrder.totalAmount}</span>
+            <span>₹{parseFloat((selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * (1 + gstPercentage / 100)).toFixed(2))}</span>
           </div>
           <div className="border-b border-dashed border-gray-400 mt-2 mb-4"></div>
           <div className="text-center mt-2 text-xs font-bold">Thank you for ordering online!</div>
