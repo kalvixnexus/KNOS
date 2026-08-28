@@ -49,6 +49,7 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-8 text-sm font-medium">
             <Link href="#features" className="text-gray-400 hover:text-yellow-500 transition-colors uppercase tracking-widest text-xs">Features</Link>
             <Link href="#pricing" className="text-gray-400 hover:text-yellow-500 transition-colors uppercase tracking-widest text-xs">Pricing</Link>
+            <Link href="/admin-login" className="text-gray-400 hover:text-white transition-colors uppercase tracking-widest text-xs font-bold flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span> Super Admin</Link>
             <Link href="/login" className="text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500/10 px-5 py-2 rounded-lg transition-all uppercase tracking-widest text-xs">Sign in</Link>
             <Link href="/signup" className="bg-gradient-to-r from-yellow-600 to-yellow-400 hover:scale-105 text-black px-6 py-2.5 rounded-lg transition-all font-bold uppercase tracking-widest text-xs shadow-[0_4px_20px_rgba(212,175,55,0.4)]">
               Get Started
