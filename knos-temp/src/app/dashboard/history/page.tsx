@@ -34,10 +34,11 @@ export default function BillHistoryPage() {
   if (loading) return <div className="text-white p-8">Loading history...</div>;
 
   return (
-    <div className="max-w-6xl hide-on-print">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">Bill History</h1>
-      </div>
+    <>
+      <div className="max-w-6xl hide-on-print">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-white">Bill History</h1>
+        </div>
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg overflow-hidden">
         <table className="w-full text-left text-gray-300">
@@ -203,6 +204,7 @@ export default function BillHistoryPage() {
           </div>
         </div>
       )}
+      </div>
 
       {/* Hidden Thermal Receipt for History Print */}
       {selectedBill && (
@@ -212,75 +214,67 @@ export default function BillHistoryPage() {
           
           <div className="border-b-2 border-dashed border-black mb-3"></div>
           
-          <div className="text-xs space-y-1 mb-3">
-            <div className="flex justify-between">
-              <span className="font-bold">Date:</span>
-              <span suppressHydrationWarning>{new Date(selectedBill.date).toLocaleDateString()} {new Date(selectedBill.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-bold">Invoice:</span>
-              <span>{selectedBill.invoiceNo}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-bold">Type:</span>
-              <span className="uppercase">{selectedBill.source || 'Manual Entry'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-bold">Customer:</span>
-              <span className="uppercase">{selectedBill.customerName}</span>
-            </div>
-            {selectedBill.customerPhone && (
-              <div className="flex justify-between">
-                <span className="font-bold">Phone:</span>
-                <span>{selectedBill.customerPhone}</span>
-              </div>
-            )}
-            <div className="flex justify-between">
-              <span className="font-bold">Payment:</span>
-              <span className="uppercase">{selectedBill.paymentMode}</span>
-            </div>
-          </div>
+          <table style={{ width: '100%', fontSize: '12px', marginBottom: '10px' }}>
+            <tbody>
+              <tr><td style={{ fontWeight: 'bold' }}>Date:</td><td style={{ textAlign: 'right' }} suppressHydrationWarning>{new Date(selectedBill.date).toLocaleDateString()} {new Date(selectedBill.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td></tr>
+              <tr><td style={{ fontWeight: 'bold' }}>Invoice:</td><td style={{ textAlign: 'right' }}>{selectedBill.invoiceNo}</td></tr>
+              <tr><td style={{ fontWeight: 'bold' }}>Type:</td><td style={{ textAlign: 'right', textTransform: 'uppercase' }}>{selectedBill.source || 'Manual Entry'}</td></tr>
+              <tr><td style={{ fontWeight: 'bold' }}>Customer:</td><td style={{ textAlign: 'right', textTransform: 'uppercase' }}>{selectedBill.customerName}</td></tr>
+              {selectedBill.customerPhone && (
+                <tr><td style={{ fontWeight: 'bold' }}>Phone:</td><td style={{ textAlign: 'right' }}>{selectedBill.customerPhone}</td></tr>
+              )}
+              <tr><td style={{ fontWeight: 'bold' }}>Payment:</td><td style={{ textAlign: 'right', textTransform: 'uppercase' }}>{selectedBill.paymentMode}</td></tr>
+            </tbody>
+          </table>
           
           <div className="border-b-2 border-dashed border-black mb-2"></div>
           
           {/* Table Header */}
-          <div className="flex text-xs font-bold mb-2 pb-1 border-b border-black">
-            <div className="flex-[3]">ITEM</div>
-            <div className="flex-1 text-center">QTY</div>
-            <div className="flex-[1.5] text-right">AMT</div>
-          </div>
-          
-          {/* Items */}
-          <div className="text-xs space-y-2 mb-3">
-            {selectedBill.items?.map((item: any, idx: number) => (
-              <div key={idx} className="flex items-start">
-                <div className="flex-[3] pr-2 leading-tight uppercase">{item.name}</div>
-                <div className="flex-1 text-center">{item.qty}</div>
-                <div className="flex-[1.5] text-right">₹{item.price * item.qty}</div>
-              </div>
-            ))}
-          </div>
+          <table style={{ width: '100%', fontSize: '12px', marginBottom: '10px' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid black' }}>
+                <th style={{ textAlign: 'left', paddingBottom: '4px', width: '50%' }}>ITEM</th>
+                <th style={{ textAlign: 'center', paddingBottom: '4px', width: '20%' }}>QTY</th>
+                <th style={{ textAlign: 'right', paddingBottom: '4px', width: '30%' }}>AMT</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedBill.items?.map((item: any, idx: number) => (
+                <tr key={idx}>
+                  <td style={{ padding: '4px 0', textTransform: 'uppercase' }}>{item.name}</td>
+                  <td style={{ padding: '4px 0', textAlign: 'center' }}>{item.qty}</td>
+                  <td style={{ padding: '4px 0', textAlign: 'right' }}>₹{item.price * item.qty}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
           
           <div className="border-b-2 border-dashed border-black mb-2"></div>
           
           {/* Totals */}
           {selectedBill.gstPercentage ? (
-            <div className="text-sm space-y-1 mb-2">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>₹{selectedBill.subTotal}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>GST ({selectedBill.gstPercentage}%)</span>
-                <span>₹{selectedBill.gstAmount}</span>
-              </div>
-            </div>
+            <table style={{ width: '100%', fontSize: '12px', marginBottom: '8px' }}>
+              <tbody>
+                <tr>
+                  <td>Subtotal</td>
+                  <td style={{ textAlign: 'right' }}>₹{selectedBill.subTotal}</td>
+                </tr>
+                <tr>
+                  <td>GST ({selectedBill.gstPercentage}%)</td>
+                  <td style={{ textAlign: 'right' }}>₹{selectedBill.gstAmount}</td>
+                </tr>
+              </tbody>
+            </table>
           ) : null}
           
-          <div className="flex justify-between font-black text-xl border-t-2 border-black pt-2 mb-4">
-            <span>TOTAL</span>
-            <span>₹{Math.round(selectedBill.total)}</span>
-          </div>
+          <table style={{ width: '100%', fontSize: '16px', fontWeight: '900', borderTop: '2px solid black', paddingTop: '4px', marginBottom: '16px' }}>
+            <tbody>
+              <tr>
+                <td>TOTAL</td>
+                <td style={{ textAlign: 'right' }}>₹{Math.round(selectedBill.total)}</td>
+              </tr>
+            </tbody>
+          </table>
           
           <div className="text-center mt-6 text-xs font-bold uppercase tracking-widest">
             Thank You For Visiting!
@@ -310,6 +304,6 @@ export default function BillHistoryPage() {
           }
         }
       `}</style>
-    </div>
+    </>
   );
 }

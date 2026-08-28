@@ -272,71 +272,66 @@ export default function ManualBilling() {
         
         <div className="border-b-2 border-dashed border-black mb-3"></div>
         
-        <div className="text-xs space-y-1 mb-3">
-          <div className="flex justify-between">
-            <span className="font-bold">Date:</span>
-            <span suppressHydrationWarning>{new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="font-bold">Invoice:</span>
-            <span>{invoicePrefix}-{invoiceNo}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="font-bold">Customer:</span>
-            <span className="uppercase">{customerName || 'Walk-in'}</span>
-          </div>
-          {customerPhone && (
-            <div className="flex justify-between">
-              <span className="font-bold">Phone:</span>
-              <span>{customerPhone}</span>
-            </div>
-          )}
-          <div className="flex justify-between">
-            <span className="font-bold">Payment:</span>
-            <span className="uppercase">{paymentMode}</span>
-          </div>
-        </div>
+        <table style={{ width: '100%', fontSize: '12px', marginBottom: '10px' }}>
+          <tbody>
+            <tr><td style={{ fontWeight: 'bold' }}>Date:</td><td style={{ textAlign: 'right' }} suppressHydrationWarning>{new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td></tr>
+            <tr><td style={{ fontWeight: 'bold' }}>Invoice:</td><td style={{ textAlign: 'right' }}>{invoicePrefix}-{invoiceNo}</td></tr>
+            <tr><td style={{ fontWeight: 'bold' }}>Customer:</td><td style={{ textAlign: 'right', textTransform: 'uppercase' }}>{customerName || 'Walk-in'}</td></tr>
+            {customerPhone && (
+              <tr><td style={{ fontWeight: 'bold' }}>Phone:</td><td style={{ textAlign: 'right' }}>{customerPhone}</td></tr>
+            )}
+            <tr><td style={{ fontWeight: 'bold' }}>Payment:</td><td style={{ textAlign: 'right', textTransform: 'uppercase' }}>{paymentMode}</td></tr>
+          </tbody>
+        </table>
         
         <div className="border-b-2 border-dashed border-black mb-2"></div>
         
         {/* Table Header */}
-        <div className="flex text-xs font-bold mb-2 pb-1 border-b border-black">
-          <div className="flex-[3]">ITEM</div>
-          <div className="flex-1 text-center">QTY</div>
-          <div className="flex-[1.5] text-right">AMT</div>
-        </div>
-        
-        {/* Items */}
-        <div className="text-xs space-y-2 mb-3">
-          {selectedItems.map((item: any) => (
-            <div key={item.id} className="flex items-start">
-              <div className="flex-[3] pr-2 leading-tight uppercase">{item.name}</div>
-              <div className="flex-1 text-center">{item.qty}</div>
-              <div className="flex-[1.5] text-right">₹{item.price * item.qty}</div>
-            </div>
-          ))}
-        </div>
+        <table style={{ width: '100%', fontSize: '12px', marginBottom: '10px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid black' }}>
+              <th style={{ textAlign: 'left', paddingBottom: '4px', width: '50%' }}>ITEM</th>
+              <th style={{ textAlign: 'center', paddingBottom: '4px', width: '20%' }}>QTY</th>
+              <th style={{ textAlign: 'right', paddingBottom: '4px', width: '30%' }}>AMT</th>
+            </tr>
+          </thead>
+          <tbody>
+            {selectedItems.map((item: any) => (
+              <tr key={item.id}>
+                <td style={{ padding: '4px 0', textTransform: 'uppercase' }}>{item.name}</td>
+                <td style={{ padding: '4px 0', textAlign: 'center' }}>{item.qty}</td>
+                <td style={{ padding: '4px 0', textAlign: 'right' }}>₹{item.price * item.qty}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         
         <div className="border-b-2 border-dashed border-black mb-2"></div>
         
         {/* Totals */}
-        <div className="text-sm space-y-1 mb-2">
-          <div className="flex justify-between">
-            <span>Subtotal</span>
-            <span>₹{subTotal}</span>
-          </div>
-          {gstPercentage > 0 && (
-            <div className="flex justify-between">
-              <span>GST ({gstPercentage}%)</span>
-              <span>₹{gstAmount}</span>
-            </div>
-          )}
-        </div>
+        <table style={{ width: '100%', fontSize: '12px', marginBottom: '8px' }}>
+          <tbody>
+            <tr>
+              <td>Subtotal</td>
+              <td style={{ textAlign: 'right' }}>₹{subTotal}</td>
+            </tr>
+            {gstPercentage > 0 && (
+              <tr>
+                <td>GST ({gstPercentage}%)</td>
+                <td style={{ textAlign: 'right' }}>₹{gstAmount}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
         
-        <div className="flex justify-between font-black text-xl border-t-2 border-black pt-2 mb-4">
-          <span>TOTAL</span>
-          <span>₹{total}</span>
-        </div>
+        <table style={{ width: '100%', fontSize: '16px', fontWeight: '900', borderTop: '2px solid black', paddingTop: '4px', marginBottom: '16px' }}>
+          <tbody>
+            <tr>
+              <td>TOTAL</td>
+              <td style={{ textAlign: 'right' }}>₹{total}</td>
+            </tr>
+          </tbody>
+        </table>
         
         <div className="text-center mt-6 text-xs font-bold uppercase tracking-widest">
           Thank You For Visiting!

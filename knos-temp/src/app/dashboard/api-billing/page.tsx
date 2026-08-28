@@ -259,71 +259,66 @@ export default function APIBilling() {
             </div>
           </div>
           
-          <div className="text-xs space-y-1 mb-3">
-            <div className="flex justify-between">
-              <span className="font-bold">Date:</span>
-              <span suppressHydrationWarning>{new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-bold">Invoice:</span>
-              <span>{invoicePrefix}-{invoiceNo}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-bold">Customer:</span>
-              <span className="uppercase">{selectedOrder.customerName}</span>
-            </div>
+          <table style={{ width: '100%', fontSize: '12px', marginBottom: '10px' }}>
+          <tbody>
+            <tr><td style={{ fontWeight: 'bold' }}>Date:</td><td style={{ textAlign: 'right' }} suppressHydrationWarning>{new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td></tr>
+            <tr><td style={{ fontWeight: 'bold' }}>Invoice:</td><td style={{ textAlign: 'right' }}>{invoicePrefix}-{invoiceNo}</td></tr>
+            <tr><td style={{ fontWeight: 'bold' }}>Customer:</td><td style={{ textAlign: 'right', textTransform: 'uppercase' }}>{selectedOrder.customerName}</td></tr>
             {selectedOrder.customerPhone && (
-              <div className="flex justify-between">
-                <span className="font-bold">Phone:</span>
-                <span>{selectedOrder.customerPhone}</span>
-              </div>
+              <tr><td style={{ fontWeight: 'bold' }}>Phone:</td><td style={{ textAlign: 'right' }}>{selectedOrder.customerPhone}</td></tr>
             )}
-            <div className="flex justify-between">
-              <span className="font-bold">Payment:</span>
-              <span className="uppercase">{paymentMode}</span>
-            </div>
-          </div>
-          
-          <div className="border-b-2 border-dashed border-black mb-2"></div>
-          
-          {/* Table Header */}
-          <div className="flex text-xs font-bold mb-2 pb-1 border-b border-black">
-            <div className="flex-[3]">ITEM</div>
-            <div className="flex-1 text-center">QTY</div>
-            <div className="flex-[1.5] text-right">AMT</div>
-          </div>
-          
-          {/* Items */}
-          <div className="text-xs space-y-2 mb-3">
+            <tr><td style={{ fontWeight: 'bold' }}>Payment:</td><td style={{ textAlign: 'right', textTransform: 'uppercase' }}>{paymentMode}</td></tr>
+          </tbody>
+        </table>
+        
+        <div className="border-b-2 border-dashed border-black mb-2"></div>
+        
+        {/* Table Header */}
+        <table style={{ width: '100%', fontSize: '12px', marginBottom: '10px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid black' }}>
+              <th style={{ textAlign: 'left', paddingBottom: '4px', width: '50%' }}>ITEM</th>
+              <th style={{ textAlign: 'center', paddingBottom: '4px', width: '20%' }}>QTY</th>
+              <th style={{ textAlign: 'right', paddingBottom: '4px', width: '30%' }}>AMT</th>
+            </tr>
+          </thead>
+          <tbody>
             {selectedOrder.items.map((item: any) => (
-              <div key={item.id} className="flex items-start">
-                <div className="flex-[3] pr-2 leading-tight uppercase">{item.name}</div>
-                <div className="flex-1 text-center">{item.qty}</div>
-                <div className="flex-[1.5] text-right">₹{item.price * item.qty}</div>
-              </div>
+              <tr key={item.id}>
+                <td style={{ padding: '4px 0', textTransform: 'uppercase' }}>{item.name}</td>
+                <td style={{ padding: '4px 0', textAlign: 'center' }}>{item.qty}</td>
+                <td style={{ padding: '4px 0', textAlign: 'right' }}>₹{item.price * item.qty}</td>
+              </tr>
             ))}
-          </div>
-          
-          <div className="border-b-2 border-dashed border-black mb-2"></div>
-          
-          {/* Totals */}
-          <div className="text-sm space-y-1 mb-2">
-            <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span>₹{selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0)}</span>
-            </div>
+          </tbody>
+        </table>
+        
+        <div className="border-b-2 border-dashed border-black mb-2"></div>
+        
+        {/* Totals */}
+        <table style={{ width: '100%', fontSize: '12px', marginBottom: '8px' }}>
+          <tbody>
+            <tr>
+              <td>Subtotal</td>
+              <td style={{ textAlign: 'right' }}>₹{selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0)}</td>
+            </tr>
             {gstPercentage > 0 && (
-              <div className="flex justify-between">
-                <span>GST ({gstPercentage}%)</span>
-                <span>₹{parseFloat(((selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * gstPercentage) / 100).toFixed(2))}</span>
-              </div>
+              <tr>
+                <td>GST ({gstPercentage}%)</td>
+                <td style={{ textAlign: 'right' }}>₹{parseFloat(((selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * gstPercentage) / 100).toFixed(2))}</td>
+              </tr>
             )}
-          </div>
-          
-          <div className="flex justify-between font-black text-xl border-t-2 border-black pt-2 mb-4">
-            <span>TOTAL</span>
-            <span>₹{Math.round(selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * (1 + gstPercentage / 100))}</span>
-          </div>
+          </tbody>
+        </table>
+        
+        <table style={{ width: '100%', fontSize: '16px', fontWeight: '900', borderTop: '2px solid black', paddingTop: '4px', marginBottom: '16px' }}>
+          <tbody>
+            <tr>
+              <td>TOTAL</td>
+              <td style={{ textAlign: 'right' }}>₹{Math.round(selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * (1 + gstPercentage / 100))}</td>
+            </tr>
+          </tbody>
+        </table>
           
           <div className="text-center mt-6 text-xs font-bold uppercase tracking-widest">
             Thank You For Ordering!
