@@ -1,6 +1,10 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { auth, db } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 export default function DashboardLayout({
   children,
@@ -8,12 +12,58 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [pendingQrCount, setPendingQrCount] = useState(0);
+  const [showPopup, setShowPopup] = useState(false);
+  const [latestOrderInfo, setLatestOrderInfo] = useState('');
+  
+  const prevCountRef = useRef(0);
+
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const q = query(collection(db, 'qr_orders'), where('userId', '==', user.uid));
+        
+        const unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
+          const currentCount = snapshot.docs.length;
+          setPendingQrCount(currentCount);
+          
+          if (currentCount > prevCountRef.current && prevCountRef.current !== 0) {
+            // A new order arrived!
+            // Let's get the latest order info to show in popup
+            const newDocs = snapshot.docChanges().filter(change => change.type === 'added');
+            if (newDocs.length > 0) {
+              const orderData = newDocs[0].doc.data();
+              setLatestOrderInfo(`Table ${orderData.tableNo} - ${orderData.customerName}`);
+              setShowPopup(true);
+              
+              // Play a sound if possible (browsers might block it without interaction, but worth a try)
+              try {
+                const audio = new Audio('https://www.soundjay.com/buttons/sounds/bell-ringing-05.mp3');
+                audio.play().catch(e => console.log('Audio autoplay blocked'));
+              } catch(e) {}
+              
+              // Hide popup after 5 seconds
+              setTimeout(() => {
+                setShowPopup(false);
+              }, 5000);
+            }
+          }
+          
+          prevCountRef.current = currentCount;
+        });
+        
+        return () => unsubscribeSnapshot();
+      }
+    });
+
+    return () => unsubscribeAuth();
+  }, []);
 
   const navLinks = [
     { name: 'Overview & API', href: '/dashboard' },
     { name: 'Upload Menu', href: '/dashboard/menu' },
     { name: 'Manual Billing', href: '/dashboard/billing' },
-    { name: 'Dine-In Orders', href: '/dashboard/dine-in', isNew: true },
+    { name: 'Dine-In Orders', href: '/dashboard/dine-in', count: pendingQrCount },
     { name: 'API Billing', href: '/dashboard/api-billing' },
     { name: 'QR Menu', href: '/dashboard/qr-menu', isPro: true },
     { type: 'divider' },
@@ -23,7 +73,21 @@ export default function DashboardLayout({
   ];
 
   return (
-    <div className="flex h-screen bg-black text-white font-sans overflow-hidden">
+    <div className="flex h-screen bg-black text-white font-sans overflow-hidden relative">
+      
+      {/* Toast Notification Popup */}
+      {showPopup && (
+        <div className="absolute top-6 right-6 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black p-4 rounded-xl shadow-[0_10px_40px_rgba(212,175,55,0.4)] z-50 animate-bounce flex items-center gap-4 cursor-pointer" onClick={() => setShowPopup(false)}>
+          <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+          </div>
+          <div>
+            <h3 className="font-black uppercase tracking-widest text-lg leading-tight">New Order!</h3>
+            <p className="text-sm font-bold opacity-80">{latestOrderInfo}</p>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar */}
       <aside className="w-64 bg-gray-950 border-r border-gray-900 flex flex-col">
         <div className="p-6 border-b border-gray-900 flex items-center gap-3">
@@ -49,12 +113,21 @@ export default function DashboardLayout({
                 }`}
               >
                 {link.name}
-                {link.isNew && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-red-500 text-white animate-pulse">New</span>
-                )}
-                {link.isPro && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-yellow-500 text-black">Pro</span>
-                )}
+                
+                {/* Badges */}
+                <div className="flex gap-2 items-center">
+                  {link.count !== undefined && link.count > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-[10px] font-black bg-red-500 text-white shadow-[0_0_10px_rgba(239,68,68,0.5)] animate-pulse">
+                      {link.count}
+                    </span>
+                  )}
+                  {link.isNew && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-red-500 text-white">New</span>
+                  )}
+                  {link.isPro && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-yellow-500 text-black">Pro</span>
+                  )}
+                </div>
               </Link>
             );
           })}
