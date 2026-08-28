@@ -34,8 +34,10 @@ export default function BillHistoryPage() {
   if (loading) return <div className="text-white p-8">Loading history...</div>;
 
   return (
-    <div className="max-w-6xl">
-      <h1 className="text-3xl font-bold mb-8 text-white">Bill History</h1>
+    <div className="max-w-6xl hide-on-print">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-white">Bill History</h1>
+      </div>
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg overflow-hidden">
         <table className="w-full text-left text-gray-300">
@@ -204,60 +206,88 @@ export default function BillHistoryPage() {
 
       {/* Hidden Thermal Receipt for History Print */}
       {selectedBill && (
-        <div className="hidden-until-print printable-receipt w-80 bg-white border border-gray-300 p-4 shadow-lg font-mono text-sm text-black">
-          <div className="text-center font-bold text-xl mb-3 uppercase">KALVIX NEXUS</div>
-          <div className="border-b border-dashed border-gray-400 mb-2"></div>
-          <div className="mb-1 uppercase"><strong>Customer:</strong> {selectedBill.customerName}</div>
-          {selectedBill.customerPhone && <div className="mb-1"><strong>Phone:</strong> {selectedBill.customerPhone}</div>}
-          <div className="mb-1"><strong>Invoice No:</strong> {selectedBill.invoiceNo}</div>
-          <div className="mb-1"><strong>Order Type:</strong> {selectedBill.source === 'API' ? 'API / Website' : 'Manual Entry'}</div>
-          <div className="mb-2">
-            <strong>Date:</strong> {new Date(selectedBill.date).toLocaleDateString()} {new Date(selectedBill.date).toLocaleTimeString()}
+        <div className="bg-white printable-receipt font-mono text-black hidden-until-print" style={{ width: '80mm', padding: '5mm', margin: '0 auto' }}>
+          <div className="text-center font-bold text-2xl mb-1 uppercase tracking-widest">KALVIX NEXUS</div>
+          <div className="text-center text-xs mb-3">TAX INVOICE</div>
+          
+          <div className="border-b-2 border-dashed border-black mb-3"></div>
+          
+          <div className="text-xs space-y-1 mb-3">
+            <div className="flex justify-between">
+              <span className="font-bold">Date:</span>
+              <span suppressHydrationWarning>{new Date(selectedBill.date).toLocaleDateString()} {new Date(selectedBill.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-bold">Invoice:</span>
+              <span>{selectedBill.invoiceNo}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-bold">Type:</span>
+              <span className="uppercase">{selectedBill.source || 'Manual Entry'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-bold">Customer:</span>
+              <span className="uppercase">{selectedBill.customerName}</span>
+            </div>
+            {selectedBill.customerPhone && (
+              <div className="flex justify-between">
+                <span className="font-bold">Phone:</span>
+                <span>{selectedBill.customerPhone}</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="font-bold">Payment:</span>
+              <span className="uppercase">{selectedBill.paymentMode}</span>
+            </div>
           </div>
-          <div className="mb-2"><strong>Payment:</strong> {selectedBill.paymentMode}</div>
-          <div className="border-b border-dashed border-gray-400 mb-2"></div>
           
-          <table className="w-full text-left mb-2">
-            <thead>
-              <tr className="border-b border-gray-300">
-                <th className="pb-1 font-normal">Item</th>
-                <th className="pb-1 font-normal text-center">Qty</th>
-                <th className="pb-1 font-normal text-right">Amt</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selectedBill.items?.map((item: any, idx: number) => (
-                <tr key={idx}>
-                  <td className="py-1">{item.name}</td>
-                  <td className="py-1 text-center">{item.qty}</td>
-                  <td className="py-1 text-right">₹{item.price * item.qty}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="border-b-2 border-dashed border-black mb-2"></div>
           
-          <div className="border-b border-dashed border-gray-400 mt-2 mb-2"></div>
+          {/* Table Header */}
+          <div className="flex text-xs font-bold mb-2 pb-1 border-b border-black">
+            <div className="flex-[3]">ITEM</div>
+            <div className="flex-1 text-center">QTY</div>
+            <div className="flex-[1.5] text-right">AMT</div>
+          </div>
           
+          {/* Items */}
+          <div className="text-xs space-y-2 mb-3">
+            {selectedBill.items?.map((item: any, idx: number) => (
+              <div key={idx} className="flex items-start">
+                <div className="flex-[3] pr-2 leading-tight uppercase">{item.name}</div>
+                <div className="flex-1 text-center">{item.qty}</div>
+                <div className="flex-[1.5] text-right">₹{item.price * item.qty}</div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="border-b-2 border-dashed border-black mb-2"></div>
+          
+          {/* Totals */}
           {selectedBill.gstPercentage ? (
-            <>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Subtotal:</span>
+            <div className="text-sm space-y-1 mb-2">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
                 <span>₹{selectedBill.subTotal}</span>
               </div>
-              <div className="flex justify-between text-sm mb-2">
-                <span>GST ({selectedBill.gstPercentage}%):</span>
+              <div className="flex justify-between">
+                <span>GST ({selectedBill.gstPercentage}%)</span>
                 <span>₹{selectedBill.gstAmount}</span>
               </div>
-            </>
+            </div>
           ) : null}
-
-          <div className="flex justify-between font-bold text-lg border-t border-dashed border-gray-400 pt-2">
-            <span>TOTAL:</span>
-            <span>₹{selectedBill.total}</span>
+          
+          <div className="flex justify-between font-black text-xl border-t-2 border-black pt-2 mb-4">
+            <span>TOTAL</span>
+            <span>₹{Math.round(selectedBill.total)}</span>
           </div>
-          <div className="border-b border-dashed border-gray-400 mt-2 mb-4"></div>
-          <div className="text-center mt-2 text-xs font-bold">Thank you for visiting!</div>
-          <div className="text-center mt-4 text-[10px] text-gray-500 uppercase tracking-widest">Bill Generated by Kalvix Nexus POS</div>
+          
+          <div className="text-center mt-6 text-xs font-bold uppercase tracking-widest">
+            Thank You For Visiting!
+          </div>
+          <div className="text-center mt-2 text-[9px] text-gray-500 uppercase tracking-widest">
+            Powered by Kalvix Nexus POS
+          </div>
         </div>
       )}
 
@@ -267,6 +297,7 @@ export default function BillHistoryPage() {
         }
         @media print {
           body * { visibility: hidden; }
+          .hide-on-print { display: none !important; }
           .printable-receipt, .printable-receipt * { visibility: visible; display: block !important; }
           .printable-receipt { 
             position: absolute; 
