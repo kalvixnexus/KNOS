@@ -1,124 +1,76 @@
-'use client';
+import Link from 'next/link';
 
-import { useState } from 'react';
-
-export default function Dashboard() {
-  const [apiKeys, setApiKeys] = useState<{ id: number; key: string; name: string; createdAt: string }[]>([]);
-  const [newKeyName, setNewKeyName] = useState('');
-
-  // Mock function to generate a new key
-  const handleGenerateKey = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newKeyName) return;
-
-    const generatedKey = 'knos_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    
-    const newKey = {
-      id: Date.now(),
-      name: newKeyName,
-      key: generatedKey,
-      createdAt: new Date().toLocaleDateString(),
-    };
-
-    setApiKeys([...apiKeys, newKey]);
-    setNewKeyName('');
-  };
-
-  const deleteKey = (id: number) => {
-    setApiKeys(apiKeys.filter((k) => k.id !== id));
-  };
-
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 p-8 font-sans">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-950 text-white font-sans selection:bg-blue-500 selection:text-white">
+      {/* Navbar */}
+      <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold text-lg">
+            K
+          </div>
+          <span className="text-xl font-bold tracking-tight">Kalvix Nexus</span>
+        </div>
+        <div className="flex items-center gap-6 text-sm font-medium">
+          <Link href="#features" className="text-gray-300 hover:text-white transition-colors">Features</Link>
+          <Link href="#pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</Link>
+          <Link href="/login" className="text-gray-300 hover:text-white transition-colors">Sign in</Link>
+          <Link href="/signup" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition-all">
+            Get Started
+          </Link>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <main className="max-w-7xl mx-auto px-8 py-24 flex flex-col items-center text-center mt-10">
+        <div className="inline-block px-4 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400 text-sm font-medium mb-8">
+          The Next-Gen POS & CRM for Restaurants 🚀
+        </div>
         
-        {/* Header */}
-        <header className="mb-10">
-          <h1 className="text-3xl font-bold">API Dashboard</h1>
-          <p className="text-gray-600 mt-2">Manage your API keys and access.</p>
-        </header>
-
-        {/* Generate Key Section */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Generate New API Key</h2>
-          <form onSubmit={handleGenerateKey} className="flex gap-4">
-            <input
-              type="text"
-              placeholder="Key Name (e.g., My Website)"
-              value={newKeyName}
-              onChange={(e) => setNewKeyName(e.target.value)}
-              className="flex-1 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition-colors"
-            >
-              Generate Key
-            </button>
-          </form>
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 leading-tight">
+          Supercharge your <br className="hidden md:block"/>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+            Restaurant Business
+          </span>
+        </h1>
+        
+        <p className="text-lg md:text-xl text-gray-400 max-w-2xl mb-10 leading-relaxed">
+          Manage orders, generate instant thermal bills, integrate your own website via API, and track your revenue—all in one powerful platform built by Kalvix Nexus.
+        </p>
+        
+        <div className="flex items-center gap-4">
+          <Link href="/signup" className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-lg shadow-blue-500/25">
+            Start for Free
+          </Link>
+          <Link href="/login" className="bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 px-8 py-4 rounded-full font-semibold text-lg transition-all">
+            Owner Login
+          </Link>
         </div>
 
-        {/* API Keys List */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">Your API Keys</h2>
-            <p className="text-sm text-gray-500 mt-1">Do not share your API keys in publicly accessible areas.</p>
-          </div>
-          
-          {apiKeys.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              No API keys generated yet. Create one above.
-            </div>
-          ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200 text-sm">
-                  <th className="px-6 py-3 font-medium text-gray-600">Name</th>
-                  <th className="px-6 py-3 font-medium text-gray-600">API Key</th>
-                  <th className="px-6 py-3 font-medium text-gray-600">Created</th>
-                  <th className="px-6 py-3 font-medium text-gray-600 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {apiKeys.map((keyObj) => (
-                  <tr key={keyObj.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium">{keyObj.name}</td>
-                    <td className="px-6 py-4 font-mono text-sm text-gray-600">
-                      {keyObj.key}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{keyObj.createdAt}</td>
-                    <td className="px-6 py-4 text-right">
-                      <button 
-                        onClick={() => deleteKey(keyObj.id)}
-                        className="text-red-500 hover:text-red-700 font-medium text-sm"
-                      >
-                        Revoke
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+        {/* Dashboard Mockup Image Placeholder */}
+        <div className="mt-24 w-full max-w-5xl rounded-xl border border-gray-800 bg-gray-900/50 p-2 shadow-2xl backdrop-blur-sm relative">
+           <div className="absolute inset-0 bg-gradient-to-t from-gray-950 to-transparent z-10 rounded-xl" />
+           <div className="h-[400px] w-full rounded-lg bg-gray-900 border border-gray-800 flex items-center justify-center relative overflow-hidden">
+             {/* Mock UI Elements */}
+             <div className="absolute top-0 left-0 w-64 h-full bg-gray-950 border-r border-gray-800 p-6 flex flex-col gap-4">
+                <div className="h-6 w-32 bg-gray-800 rounded-md mb-8"></div>
+                <div className="h-4 w-full bg-blue-900/30 border border-blue-800/50 rounded-md"></div>
+                <div className="h-4 w-3/4 bg-gray-800 rounded-md"></div>
+                <div className="h-4 w-4/5 bg-gray-800 rounded-md"></div>
+             </div>
+             <div className="ml-64 w-full h-full p-8 flex flex-col gap-6">
+                <div className="flex gap-4">
+                  <div className="h-24 w-1/3 bg-gray-800 rounded-lg"></div>
+                  <div className="h-24 w-1/3 bg-gray-800 rounded-lg"></div>
+                  <div className="h-24 w-1/3 bg-gray-800 rounded-lg"></div>
+                </div>
+                <div className="h-full w-full bg-gray-800 rounded-lg flex items-center justify-center text-gray-700 font-mono text-2xl">
+                   Kalvix Nexus Dashboard
+                </div>
+             </div>
+           </div>
         </div>
-
-        {/* Developer Instructions */}
-        <div className="mt-10 p-6 bg-blue-50 text-blue-900 rounded-lg border border-blue-100">
-          <h3 className="font-semibold text-lg mb-2">How to use your API</h3>
-          <p className="text-sm mb-4">Other websites can access your data by making a GET request to your API endpoint with the API key in the Authorization header.</p>
-          <div className="bg-gray-900 text-gray-100 p-4 rounded-md font-mono text-sm overflow-x-auto">
-            <code>
-              fetch('http://localhost:3000/api/data', {'{\n'}
-              {'  '}headers: {'{\n'}
-              {'    '}'Authorization': 'Bearer YOUR_API_KEY'\n
-              {'  '}{'}\n'}
-              {'}'})
-            </code>
-          </div>
-        </div>
-
-      </div>
+      </main>
     </div>
   );
 }
