@@ -88,6 +88,11 @@ export default function APIBilling() {
 
   const handleSelectOrder = (order: any) => {
     setSelectedOrder(order);
+    if (order.paymentMode) {
+      setPaymentMode(order.paymentMode);
+    } else {
+      setPaymentMode('UPI');
+    }
     setInvoiceNo(Math.floor(100000 + Math.random() * 900000).toString());
   };
 
@@ -112,6 +117,7 @@ export default function APIBilling() {
         gstPercentage,
         gstAmount,
         total,
+        source: 'API',
         date: new Date().toISOString()
       });
       
@@ -222,11 +228,12 @@ export default function APIBilling() {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-400 mb-1">Payment Mode</label>
-              <select value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)} className="w-full px-3 py-2 border border-gray-700 bg-black rounded-md text-white">
+              <label className="block text-sm font-medium text-gray-400 mb-1">Payment Mode (From Website)</label>
+              <select value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)} className="w-full px-3 py-2 border border-gray-700 bg-black rounded-md text-white font-bold text-yellow-500">
                 <option value="UPI">UPI (Pre-paid)</option>
                 <option value="Card">Card (Pre-paid)</option>
                 <option value="Cash">Cash on Delivery</option>
+                <option value="Online">Online</option>
               </select>
             </div>
             

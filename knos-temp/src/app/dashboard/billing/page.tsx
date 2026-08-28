@@ -16,12 +16,28 @@ export default function ManualBilling() {
   const [restaurantName, setRestaurantName] = useState('YOUR RESTAURANT');
   const [gstPercentage, setGstPercentage] = useState(0);
   
+  const [qrOrders, setQrOrders] = useState<any[]>([]);
+  
   // Auto-generate a random 6-digit invoice number on client side
   const [invoiceNo, setInvoiceNo] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const fetchQrOrders = async (uid: string) => {
+    try {
+      const { query, collection, where, getDocs } = require('firebase/firestore');
+      const q = query(collection(db, 'qr_orders'), where('userId', '==', uid));
+      const snapshot = await getDocs(q);
+      const orders = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      orders.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      setQrOrders(orders);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     setInvoiceNo(Math.floor(100000 + Math.random() * 900000).toString());
+    let intervalId: NodeJS.Timeout;
     
     // Fetch logged in owner's settings and menu
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -42,13 +58,21 @@ export default function ManualBilling() {
           if (menuDoc.exists() && menuDoc.data().items) {
             setMenuItems(menuDoc.data().items);
           }
+
+          fetchQrOrders(user.uid);
+          intervalId = setInterval(() => {
+            fetchQrOrders(user.uid);
+          }, 5000);
         } catch (error) {
           console.error("Error fetching user data", error);
         }
       }
     });
     
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (intervalId) clearInterval(intervalId);
+    };
   }, []);
 
   const handleAddItem = (item: any) => {
@@ -69,10 +93,10 @@ export default function ManualBilling() {
   const total = parseFloat((subTotal + gstAmount).toFixed(2));
 
   const handlePrint = async () => {
-    if (!customerName || selectedItems.length === 0 || !userId) return;
-
-    setSaving(true);
+    if (selectedItems.length === 0) return alert('Add items to bill first');
+    if (!customerName) return alert('Enter customer name');
     
+    setSaving(true);
     try {
       await addDoc(collection(db, 'bills'), {
         userId,
@@ -85,21 +109,58 @@ export default function ManualBilling() {
         gstPercentage,
         gstAmount,
         total,
+        source: 'Manual',
         date: new Date().toISOString()
       });
       
       window.print();
       
       // Reset after print
-      setSelectedItems([]);
       setCustomerName('');
       setCustomerPhone('');
+      setSelectedItems([]);
       setInvoiceNo(Math.floor(100000 + Math.random() * 900000).toString());
     } catch (error) {
-      console.error('Error saving bill:', error);
-      alert('Failed to save bill to history');
+      alert('Error generating bill');
     }
     setSaving(false);
+  };
+
+  const handleApproveQrOrder = async (order: any) => {
+    try {
+      const { deleteDoc } = require('firebase/firestore');
+      
+      const orderSubTotal = order.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0);
+      const orderGstAmount = (orderSubTotal * gstPercentage) / 100;
+      const orderTotal = orderSubTotal + orderGstAmount;
+
+      await addDoc(collection(db, 'bills'), {
+        userId,
+        invoiceNo: `${invoicePrefix}-${invoiceNo}`,
+        customerName: order.customerName,
+        customerPhone: order.customerPhone || '',
+        paymentMode: order.paymentMode,
+        items: order.items,
+        subTotal: orderSubTotal,
+        gstPercentage,
+        gstAmount: orderGstAmount,
+        total: orderTotal,
+        source: 'QR Table ' + order.tableNo,
+        date: new Date().toISOString()
+      });
+
+      await deleteDoc(doc(db, 'qr_orders', order.id));
+      
+      // We don't auto print here unless they want to, but we can set the receipt info and print.
+      // To do this simply, we could just alert for now, or populate the cart and print.
+      alert(`Order from Table ${order.tableNo} Approved and Saved to History!`);
+      setInvoiceNo(Math.floor(100000 + Math.random() * 900000).toString());
+      if (userId) fetchQrOrders(userId);
+
+    } catch (error) {
+      console.error(error);
+      alert('Failed to approve QR order');
+    }
   };
 
   return (
@@ -201,6 +262,41 @@ export default function ManualBilling() {
             )}
           </div>
         </div>
+
+        {/* Received QR Orders Section */}
+        <div className="mt-8 bg-gray-900 p-6 rounded-xl shadow-lg border border-yellow-500/30 hide-on-print">
+          <h2 className="text-xl font-bold text-yellow-500 uppercase tracking-widest mb-4 flex justify-between items-center">
+            <span>Dine-In Orders (QR)</span>
+            <span className="bg-yellow-500 text-black px-3 py-1 rounded-full text-xs font-black">{qrOrders.length} New</span>
+          </h2>
+          
+          {qrOrders.length === 0 ? (
+            <div className="text-gray-500 text-sm text-center py-8 border border-dashed border-gray-800 rounded-lg">No incoming orders from tables right now.</div>
+          ) : (
+            <div className="space-y-4">
+              {qrOrders.map(order => (
+                <div key={order.id} className="bg-black border border-yellow-500/50 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="bg-yellow-500 text-black font-black px-2 py-0.5 rounded text-xs uppercase tracking-widest">Table {order.tableNo}</span>
+                      <span className="text-white font-bold">{order.customerName}</span>
+                    </div>
+                    <div className="text-gray-400 text-sm">
+                      {order.items.length} items • ₹{order.totalAmount} • {order.paymentMode}
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleApproveQrOrder(order)}
+                    className="bg-yellow-500 hover:bg-yellow-400 text-black px-6 py-2 rounded font-bold uppercase tracking-widest text-sm transition-colors shadow whitespace-nowrap"
+                  >
+                    Accept & History
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
 
       {/* Thermal Receipt Print Area */}

@@ -56,22 +56,25 @@ export default function BillHistoryPage() {
               </tr>
             ) : (
               bills.map(bill => (
-                <tr key={bill.id} className="hover:bg-gray-800/50 transition-colors">
+                <tr key={bill.id} className="border-b border-gray-800 hover:bg-gray-800/30 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     {new Date(bill.date).toLocaleDateString()} <br/>
                     <span className="text-xs text-gray-500">{new Date(bill.date).toLocaleTimeString()}</span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="p-4">
                     <button 
                       onClick={() => setSelectedBill(bill)}
-                      className="font-mono text-yellow-500 hover:text-yellow-400 hover:underline transition-colors font-bold"
+                      className="text-yellow-500 hover:text-yellow-400 font-bold flex items-center gap-2"
                     >
                       {bill.invoiceNo}
+                      {bill.source === 'API' && (
+                        <span className="bg-blue-500/20 text-blue-400 text-[10px] px-2 py-0.5 rounded uppercase tracking-widest border border-blue-500/30">API</span>
+                      )}
                     </button>
                   </td>
-                  <td className="px-6 py-4">
-                    {bill.customerName}
-                    {bill.customerPhone && <div className="text-xs text-gray-500">{bill.customerPhone}</div>}
+                  <td className="p-4">
+                    <div className="font-bold">{bill.customerName}</div>
+                    <div className="text-xs text-gray-500">{bill.customerPhone}</div>
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-xs bg-gray-800 px-2 py-1 rounded">
@@ -200,6 +203,7 @@ export default function BillHistoryPage() {
           <div className="mb-1 uppercase"><strong>Customer:</strong> {selectedBill.customerName}</div>
           {selectedBill.customerPhone && <div className="mb-1"><strong>Phone:</strong> {selectedBill.customerPhone}</div>}
           <div className="mb-1"><strong>Invoice No:</strong> {selectedBill.invoiceNo}</div>
+          <div className="mb-1"><strong>Order Type:</strong> {selectedBill.source === 'API' ? 'API / Website' : 'Manual Entry'}</div>
           <div className="mb-2">
             <strong>Date:</strong> {new Date(selectedBill.date).toLocaleDateString()} {new Date(selectedBill.date).toLocaleTimeString()}
           </div>

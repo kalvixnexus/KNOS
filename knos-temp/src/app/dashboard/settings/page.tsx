@@ -9,6 +9,7 @@ export default function SettingsPage() {
   const [restaurantName, setRestaurantName] = useState('');
   const [invoicePrefix, setInvoicePrefix] = useState('INV');
   const [gstPercentage, setGstPercentage] = useState(0);
+  const [totalTables, setTotalTables] = useState(0);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -23,6 +24,7 @@ export default function SettingsPage() {
             if (data.restaurantName) setRestaurantName(data.restaurantName);
             if (data.invoicePrefix) setInvoicePrefix(data.invoicePrefix);
             if (data.gstPercentage !== undefined) setGstPercentage(data.gstPercentage);
+            if (data.totalTables !== undefined) setTotalTables(data.totalTables);
           }
         } catch (error) {
           console.error("Error fetching settings:", error);
@@ -42,7 +44,8 @@ export default function SettingsPage() {
       await updateDoc(doc(db, 'users', userId), {
         restaurantName,
         invoicePrefix: invoicePrefix.toUpperCase(),
-        gstPercentage: Number(gstPercentage)
+        gstPercentage: Number(gstPercentage),
+        totalTables: Number(totalTables)
       });
       alert('Settings saved successfully!');
     } catch (error) {
@@ -100,6 +103,20 @@ export default function SettingsPage() {
               step="0.1"
             />
             <p className="text-xs text-gray-500 mt-2">Enter 0 if GST is not applicable.</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">Total Tables (For QR Menu)</label>
+            <input 
+              type="number" 
+              value={totalTables}
+              onChange={(e) => setTotalTables(parseInt(e.target.value) || 0)}
+              className="w-full bg-black border border-gray-800 rounded-md px-4 py-3 text-white focus:outline-none focus:border-yellow-500 font-mono transition-colors"
+              placeholder="e.g. 10"
+              min="0"
+              max="100"
+            />
+            <p className="text-xs text-gray-500 mt-2">Enter the total number of dine-in tables in your restaurant.</p>
           </div>
 
           <div className="pt-4 border-t border-gray-800">

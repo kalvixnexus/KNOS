@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { auth, db } from '@/lib/firebase';
+import { auth, db, storage } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export default function MenuUploadPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -55,14 +56,16 @@ export default function MenuUploadPage() {
         if (parts.length >= 2) {
           const name = parts[0].trim();
           const price = parseFloat(parts[1].trim());
+          const imageUrl = parts.length > 2 ? parts[2].trim() : '';
+          
           if (name && !isNaN(price)) {
-            parsedItems.push({ id: idCounter++, name, price });
+            parsedItems.push({ id: idCounter++, name, price, imageUrl });
           }
         }
       }
 
       if (parsedItems.length === 0) {
-        alert('No valid items found in CSV. Format should be: ItemName,Price');
+        alert('No valid items found in CSV. Format should be: ItemName,Price,ImageUrl(Optional)');
         return;
       }
 
@@ -98,7 +101,20 @@ export default function MenuUploadPage() {
   };
 
   const handleAddItem = () => {
-    setStagedMenu([...stagedMenu, { id: Date.now(), name: '', price: 0 }]);
+    setStagedMenu([...stagedMenu, { id: Date.now(), name: '', price: 0, imageUrl: '' }]);
+  };
+
+  const handleImageUpload = async (id: number, file: File) => {
+    if (!userId) return;
+    try {
+      const storageRef = ref(storage, `menu_images/${userId}/${id}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      handleItemChange(id, 'imageUrl', url);
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Storage rules might not be set up.');
+    }
   };
 
   const handlePublish = async () => {
@@ -213,9 +229,20 @@ export default function MenuUploadPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {currentMenu.map(item => (
-                  <div key={item.id} className="bg-black border border-gray-800 p-4 rounded-lg flex justify-between items-center hover:border-yellow-500/50 transition-colors">
-                    <span className="font-bold text-white">{item.name}</span>
-                    <span className="text-yellow-500 font-bold">₹{item.price}</span>
+                  <div key={item.id} className="bg-black border border-gray-800 p-4 rounded-lg hover:border-yellow-500/50 transition-colors flex gap-4 items-center">
+                    {item.imageUrl ? (
+                      <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-900 shrink-0 border border-gray-800">
+                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 rounded-md bg-gray-900 flex items-center justify-center shrink-0 border border-gray-800 text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <div className="font-bold text-white">{item.name}</div>
+                      <div className="text-yellow-500 font-bold text-sm">₹{item.price}</div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -230,35 +257,68 @@ export default function MenuUploadPage() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex gap-4 px-2 pb-2 text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-gray-800">
-                  <div className="flex-[2]">Item Name</div>
-                  <div className="flex-1">Price (₹)</div>
-                  <div className="w-10 text-center">Action</div>
+                  <div className="w-12">Img</div>
+                  <div className="flex-[2]">Details</div>
+                  <div className="flex-1">Image URL or Upload</div>
+                  <div className="w-10 text-center">Act</div>
                 </div>
                 
                 {stagedMenu.map(item => (
-                  <div key={item.id} className="flex gap-4 items-center group">
-                    <div className="flex-[2]">
+                  <div key={item.id} className="flex gap-4 items-start group bg-black/50 p-3 rounded-lg border border-gray-800/50">
+                    <div className="w-12 h-12 shrink-0 bg-gray-900 rounded overflow-hidden border border-gray-800 flex items-center justify-center">
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt="preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[10px] text-gray-600">No Img</span>
+                      )}
+                    </div>
+                    
+                    <div className="flex-[2] flex flex-col gap-2">
                       <input 
                         type="text"
                         value={item.name}
                         onChange={(e) => handleItemChange(item.id, 'name', e.target.value)}
-                        placeholder="e.g. Garlic Bread"
-                        className="w-full bg-black border border-gray-800 rounded px-4 py-2 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none transition-all"
+                        placeholder="Item Name (e.g. Garlic Bread)"
+                        className="w-full bg-black border border-gray-800 rounded px-3 py-1.5 text-white text-sm focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none transition-all"
                       />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
+                        <input 
+                          type="number"
+                          value={item.price || ''}
+                          onChange={(e) => handleItemChange(item.id, 'price', parseFloat(e.target.value))}
+                          placeholder="0"
+                          className="w-full bg-black border border-gray-800 rounded pl-7 pr-3 py-1.5 text-white text-sm focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none transition-all"
+                        />
+                      </div>
                     </div>
-                    <div className="flex-1 relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+
+                    <div className="flex-1 flex flex-col gap-2">
                       <input 
-                        type="number"
-                        value={item.price || ''}
-                        onChange={(e) => handleItemChange(item.id, 'price', parseFloat(e.target.value))}
-                        placeholder="0"
-                        className="w-full bg-black border border-gray-800 rounded pl-8 pr-4 py-2 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none transition-all"
+                        type="text"
+                        value={item.imageUrl || ''}
+                        onChange={(e) => handleItemChange(item.id, 'imageUrl', e.target.value)}
+                        placeholder="Paste Image URL..."
+                        className="w-full bg-black border border-gray-800 rounded px-3 py-1.5 text-white text-sm focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none transition-all"
                       />
+                      <div className="relative w-full">
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (e.target.files?.[0]) handleImageUpload(item.id, e.target.files[0]);
+                          }}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <button type="button" className="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white rounded px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors">
+                          Or Upload Image
+                        </button>
+                      </div>
                     </div>
-                    <div className="w-10 flex justify-center">
+
+                    <div className="w-10 flex justify-center items-center h-full pt-2">
                       <button 
                         onClick={() => handleRemoveItem(item.id)}
                         className="w-8 h-8 rounded bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors"

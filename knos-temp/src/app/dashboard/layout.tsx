@@ -14,6 +14,7 @@ export default function DashboardLayout({
     { name: 'Upload Menu', href: '/dashboard/menu' },
     { name: 'Manual Billing', href: '/dashboard/billing' },
     { name: 'API Billing', href: '/dashboard/api-billing', isNew: true },
+    { name: 'QR Menu', href: '/dashboard/qr-menu', isPro: true },
     { type: 'divider' },
     { name: 'Bill History', href: '/dashboard/history' },
     { name: 'Payment History', href: '/dashboard/payments' },
@@ -49,6 +50,9 @@ export default function DashboardLayout({
                 {link.name}
                 {link.isNew && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-red-500 text-white animate-pulse">New</span>
+                )}
+                {link.isPro && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-yellow-500 text-black">Pro</span>
                 )}
               </Link>
             );
