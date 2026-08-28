@@ -183,63 +183,114 @@ export default function Dashboard() {
           Send orders from your public website to this POS automatically using your unique API Key.
         </p>
         
-        <div className="relative group">
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="relative group mt-4">
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
             <button 
               onClick={() => {
-                const code = `POST /api/external/orders
-Headers: {
-  "Authorization": "Bearer ${apiKeys.length > 0 ? apiKeys[apiKeys.length - 1].key : 'YOUR_API_KEY'}",
-  "Content-Type": "application/json"
-}
-Body: {
-  "customerName": "Rahul Sharma",
-  "customerPhone": "9876543210",
-  "paymentMode": "Online",
-  "totalAmount": 700,
-  "items": [
-    { "id": 1, "name": "Pizza", "price": 300, "qty": 2 },
-    { "id": 2, "name": "Cold Drink", "price": 50, "qty": 2 }
-  ]
+                const code = `### Hello Developer,
+We have integrated Kalvix Nexus POS for billing. Whenever a successful order is placed on the website, push it to our POS using the function below.
+
+// Replace with the unique API Key from the POS
+const API_KEY = "${apiKeys.length > 0 ? apiKeys[apiKeys.length - 1].key : 'YOUR_API_KEY'}"; 
+// Replace with the actual domain where the POS is hosted
+const POS_BASE_URL = "https://your-pos-domain.com"; 
+
+async function sendOrderToKalvixPOS(customerInfo, cartItems, totalAmount) {
+  try {
+    const response = await fetch(\`\${POS_BASE_URL}/api/external/orders\`, {
+      method: "POST",
+      headers: {
+        "Authorization": \`Bearer \${API_KEY}\`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        customerName: customerInfo.name,          // e.g., "Vikram Singh"
+        customerPhone: customerInfo.phone || "",  // e.g., "9876543210"
+        paymentMode: customerInfo.paymentMethod,  // e.g., "UPI", "Card", "Cash"
+        totalAmount: totalAmount,                 // e.g., 1050
+        
+        items: cartItems.map(item => ({
+          id: item.id || Date.now(),
+          name: item.name,                        // e.g., "Burger"
+          price: Number(item.price),              // e.g., 150
+          qty: Number(item.quantity)              // e.g., 2
+        }))
+      })
+    });
+
+    const data = await response.json();
+    if (response.ok) console.log("✅ Order sent to POS successfully! Order ID:", data.orderId);
+    else console.error("❌ Failed to send order to POS:", data.error);
+  } catch (error) {
+    console.error("❌ API Connection Error:", error);
+  }
 }`;
                 navigator.clipboard.writeText(code);
-                alert('Code snippet copied!');
+                alert('Ready-made code copied! Send this directly to your developer.');
               }}
-              className="bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-md border border-gray-700 text-xs font-bold flex items-center gap-1 shadow-lg transition-colors"
+              className="bg-yellow-500 hover:bg-yellow-400 text-black p-2 rounded-md border border-yellow-600 text-xs font-bold flex items-center gap-1 shadow-lg transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
-              COPY CODE
+              COPY FULL MESSAGE FOR DEVELOPER
             </button>
           </div>
-          <div className="bg-black border border-gray-800 p-5 rounded-md font-mono text-sm text-gray-300 overflow-x-auto shadow-inner">
-            <div className="text-gray-500 mb-2">// cURL or Fetch POST Request</div>
+          <div className="bg-black border border-gray-800 p-5 rounded-md font-mono text-sm text-gray-300 overflow-x-auto shadow-inner relative">
+            <div className="text-gray-500 mb-4 whitespace-pre-wrap">
+{`### Hello Developer,
+We have integrated Kalvix Nexus POS for billing. Whenever a successful order is placed on the website, push it to our POS using the function below.`}
+            </div>
+            
+            <div className="text-green-400 mb-1">// Replace with the unique API Key from the POS</div>
             <div>
-              <span className="text-blue-400 font-bold">POST</span> <span className="text-green-400">/api/external/orders</span>
+              <span className="text-blue-300">const</span> <span className="text-white">API_KEY</span> <span className="text-pink-400">=</span> <span className="text-yellow-200">"{apiKeys.length > 0 ? <span className="text-yellow-500 font-bold">{apiKeys[apiKeys.length - 1].key}</span> : 'YOUR_API_KEY'}"</span>;
             </div>
-            <br/>
-            <div className="text-pink-400">Headers: {'{'}</div>
-            <div className="pl-4">
-              <span className="text-blue-300">"Authorization"</span>: <span className="text-yellow-200">"Bearer <span className={apiKeys.length > 0 ? "text-yellow-500 font-bold" : "text-gray-500"}>{apiKeys.length > 0 ? apiKeys[apiKeys.length - 1].key : 'YOUR_API_KEY'}</span>"</span>,<br/>
-              <span className="text-blue-300">"Content-Type"</span>: <span className="text-yellow-200">"application/json"</span>
+            
+            <div className="text-green-400 mt-2 mb-1">// Replace with the actual domain where the POS is hosted</div>
+            <div>
+              <span className="text-blue-300">const</span> <span className="text-white">POS_BASE_URL</span> <span className="text-pink-400">=</span> <span className="text-yellow-200">"https://your-pos-domain.com"</span>;
             </div>
-            <div className="text-pink-400">{'}'}</div>
-            <br/>
-            <div className="text-pink-400">Body: {'{'}</div>
+            <br />
+            <div>
+              <span className="text-blue-300">async function</span> <span className="text-yellow-100">sendOrderToKalvixPOS</span>(customerInfo, cartItems, totalAmount) {'{'}
+            </div>
             <div className="pl-4">
-              <span className="text-blue-300">"customerName"</span>: <span className="text-yellow-200">"Rahul Sharma"</span>,<br/>
-              <span className="text-blue-300">"customerPhone"</span>: <span className="text-yellow-200">"9876543210"</span>,<br/>
-              <span className="text-blue-300">"paymentMode"</span>: <span className="text-yellow-200">"Online"</span>,<br/>
-              <span className="text-blue-300">"totalAmount"</span>: <span className="text-purple-400">700</span>,<br/>
-              <span className="text-blue-300">"items"</span>: {'['}
+              <span className="text-blue-300">try</span> {'{'}
               <div className="pl-4">
-                {'{'} <span className="text-blue-300">"id"</span>: <span className="text-purple-400">1</span>, <span className="text-blue-300">"name"</span>: <span className="text-yellow-200">"Pizza"</span>, <span className="text-blue-300">"price"</span>: <span className="text-purple-400">300</span>, <span className="text-blue-300">"qty"</span>: <span className="text-purple-400">2</span> {'}'},<br/>
-                {'{'} <span className="text-blue-300">"id"</span>: <span className="text-purple-400">2</span>, <span className="text-blue-300">"name"</span>: <span className="text-yellow-200">"Cold Drink"</span>, <span className="text-blue-300">"price"</span>: <span className="text-purple-400">50</span>, <span className="text-blue-300">"qty"</span>: <span className="text-purple-400">2</span> {'}'}
+                <span className="text-blue-300">const</span> response <span className="text-pink-400">=</span> <span className="text-blue-300">await</span> <span className="text-yellow-100">fetch</span>(<span className="text-yellow-200">{"`${POS_BASE_URL}/api/external/orders`"}</span>, {'{'}
+                <div className="pl-4">
+                  method: <span className="text-yellow-200">"POST"</span>,<br/>
+                  headers: {'{'}
+                  <div className="pl-4">
+                    <span className="text-yellow-200">"Authorization"</span>: <span className="text-yellow-200">{"`Bearer ${API_KEY}`"}</span>,<br/>
+                    <span className="text-yellow-200">"Content-Type"</span>: <span className="text-yellow-200">"application/json"</span>
+                  </div>
+                  {'}'},<br/>
+                  body: <span className="text-white">JSON</span>.<span className="text-yellow-100">stringify</span>({'{'}
+                  <div className="pl-4">
+                    customerName: customerInfo.name, <span className="text-gray-500">// e.g., "Vikram Singh"</span><br/>
+                    customerPhone: customerInfo.phone <span className="text-pink-400">||</span> <span className="text-yellow-200">""</span>, <span className="text-gray-500">// e.g., "9876543210"</span><br/>
+                    paymentMode: customerInfo.paymentMethod, <span className="text-gray-500">// e.g., "UPI", "Card", "Cash"</span><br/>
+                    totalAmount: totalAmount, <span className="text-gray-500">// e.g., 1050</span><br/><br/>
+                    items: cartItems.<span className="text-yellow-100">map</span>(item <span className="text-blue-300">=&gt;</span> ({'{'}
+                    <div className="pl-4">
+                      id: item.id <span className="text-pink-400">||</span> <span className="text-white">Date</span>.<span className="text-yellow-100">now</span>(),<br/>
+                      name: item.name, <span className="text-gray-500">// e.g., "Burger"</span><br/>
+                      price: <span className="text-white">Number</span>(item.price), <span className="text-gray-500">// e.g., 150</span><br/>
+                      qty: <span className="text-white">Number</span>(item.quantity) <span className="text-gray-500">// e.g., 2</span>
+                    </div>
+                    {'}))'}
+                  </div>
+                  {'}'})
+                </div>
+                {'});'}
               </div>
-              {']'}
+              {'}'} <span className="text-blue-300">catch</span> (error) {'{'}
+              <div className="pl-4 text-gray-500">// Handle Error</div>
+              {'}'}
             </div>
-            <div className="text-pink-400">{'}'}</div>
+            {'}'}
           </div>
         </div>
       </div>
