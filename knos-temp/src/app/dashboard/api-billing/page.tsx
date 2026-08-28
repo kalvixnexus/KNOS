@@ -19,6 +19,7 @@ export default function APIBilling() {
 
   // Fetch settings & pending orders
   useEffect(() => {
+    let intervalId: NodeJS.Timeout;
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUserId(user.uid);
@@ -31,15 +32,26 @@ export default function APIBilling() {
             if (data.restaurantName) setRestaurantName(data.restaurantName);
             if (data.gstPercentage !== undefined) setGstPercentage(data.gstPercentage);
           }
-          // Fetch API Orders
+          // Fetch API Orders initially
           fetchApiOrders(user.uid);
+
+          // Auto refresh every 5 seconds
+          intervalId = setInterval(() => {
+            fetchApiOrders(user.uid);
+          }, 5000);
         } catch (error) {
           console.error(error);
+          setLoading(false);
         }
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
-    return () => unsubscribe();
+    
+    return () => {
+      unsubscribe();
+      if (intervalId) clearInterval(intervalId);
+    };
   }, []);
 
   const fetchApiOrders = async (uid: string) => {
@@ -159,10 +171,52 @@ export default function APIBilling() {
       {selectedOrder && (
         <div className="w-96 hide-on-print flex flex-col gap-4">
           <div className="bg-gray-900 border border-yellow-500/30 rounded-xl p-6 shadow-[0_0_20px_rgba(212,175,55,0.1)]">
-            <h2 className="text-lg font-bold text-yellow-500 uppercase tracking-widest mb-4">Confirm & Generate</h2>
+            <h2 className="text-lg font-bold text-yellow-500 uppercase tracking-widest mb-4">Order Details</h2>
             
+            <div className="mb-4 text-sm">
+              <div className="flex justify-between mb-1">
+                <span className="text-gray-400">Customer:</span>
+                <span className="text-white font-bold">{selectedOrder.customerName}</span>
+              </div>
+              {selectedOrder.customerPhone && (
+                <div className="flex justify-between mb-1">
+                  <span className="text-gray-400">Phone:</span>
+                  <span className="text-white font-bold">{selectedOrder.customerPhone}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-gray-800 pt-4 mb-4">
+              <h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Items</h3>
+              <div className="space-y-2">
+                {selectedOrder.items.map((item: any, idx: number) => (
+                  <div key={idx} className="flex justify-between text-sm">
+                    <span className="text-gray-300">{item.name} <span className="text-gray-500 ml-1">x{item.qty}</span></span>
+                    <span className="text-white">₹{item.price * item.qty}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border-t border-gray-800 pt-4 mb-6">
+              <div className="flex justify-between text-sm mb-1 text-gray-400">
+                <span>Subtotal:</span>
+                <span>₹{selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0)}</span>
+              </div>
+              {gstPercentage > 0 && (
+                <div className="flex justify-between text-sm mb-2 text-gray-400">
+                  <span>GST ({gstPercentage}%):</span>
+                  <span>₹{parseFloat(((selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * gstPercentage) / 100).toFixed(2))}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t border-gray-700">
+                <span className="text-yellow-500">TOTAL:</span>
+                <span className="text-yellow-500">₹{parseFloat((selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * (1 + gstPercentage / 100)).toFixed(2))}</span>
+              </div>
+            </div>
+
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-400 mb-1">Payment Mode (Website)</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">Payment Mode</label>
               <select value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)} className="w-full px-3 py-2 border border-gray-700 bg-black rounded-md text-white">
                 <option value="UPI">UPI (Pre-paid)</option>
                 <option value="Card">Card (Pre-paid)</option>
