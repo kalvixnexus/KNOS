@@ -55,12 +55,18 @@ export default function APIBilling() {
   }, []);
 
   const fetchApiOrders = async (uid: string) => {
-    const q = query(collection(db, 'api_orders'), where('userId', '==', uid));
-    const snapshot = await getDocs(q);
-    const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    // Sort by timestamp
-    orders.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    setApiOrders(orders);
+    try {
+      const q = query(collection(db, 'api_orders'), where('userId', '==', uid));
+      const snapshot = await getDocs(q);
+      const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Sort by timestamp
+      orders.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      setApiOrders(orders);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSimulateOrder = async () => {
