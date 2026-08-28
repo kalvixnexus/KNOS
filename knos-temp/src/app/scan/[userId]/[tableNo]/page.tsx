@@ -2,9 +2,12 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, addDoc } from 'firebase/firestore';
+import { useParams } from 'next/navigation';
 
-export default function QRMenuPage({ params }: { params: { userId: string, tableNo: string } }) {
-  const { userId, tableNo } = params;
+export default function QRMenuPage() {
+  const params = useParams();
+  const userId = params.userId as string;
+  const tableNo = params.tableNo as string;
   
   const [restaurantName, setRestaurantName] = useState('');
   const [menu, setMenu] = useState<any[]>([]);
