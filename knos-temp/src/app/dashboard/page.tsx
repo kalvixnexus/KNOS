@@ -192,8 +192,8 @@ We have integrated Kalvix Nexus POS for billing. Whenever a successful order is 
 
 // Replace with the unique API Key from the POS
 const API_KEY = "${apiKeys.length > 0 ? apiKeys[apiKeys.length - 1].key : 'YOUR_API_KEY'}"; 
-// Replace with the actual domain where the POS is hosted
-const POS_BASE_URL = "https://your-pos-domain.com"; 
+// The actual domain where Kalvix Nexus POS is hosted
+const POS_BASE_URL = "https://knospos.vercel.app"; 
 
 async function sendOrderToKalvixPOS(customerInfo, cartItems, totalAmount) {
   try {
@@ -247,9 +247,9 @@ We have integrated Kalvix Nexus POS for billing. Whenever a successful order is 
               <span className="text-blue-300">const</span> <span className="text-white">API_KEY</span> <span className="text-pink-400">=</span> <span className="text-yellow-200">"{apiKeys.length > 0 ? <span className="text-yellow-500 font-bold">{apiKeys[apiKeys.length - 1].key}</span> : 'YOUR_API_KEY'}"</span>;
             </div>
             
-            <div className="text-green-400 mt-2 mb-1">// Replace with the actual domain where the POS is hosted</div>
+            <div className="text-green-400 mt-2 mb-1">// The actual domain where Kalvix Nexus POS is hosted</div>
             <div>
-              <span className="text-blue-300">const</span> <span className="text-white">POS_BASE_URL</span> <span className="text-pink-400">=</span> <span className="text-yellow-200">"https://your-pos-domain.com"</span>;
+              <span className="text-blue-300">const</span> <span className="text-white">POS_BASE_URL</span> <span className="text-pink-400">=</span> <span className="text-yellow-200">"https://knospos.vercel.app"</span>;
             </div>
             <br />
             <div>
