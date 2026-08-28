@@ -59,7 +59,16 @@ export default function DashboardLayout({
     return () => unsubscribeAuth();
   }, []);
 
-  const navLinks = [
+  type NavLink = {
+    name?: string;
+    href?: string;
+    type?: string;
+    isNew?: boolean;
+    isPro?: boolean;
+    count?: number;
+  };
+
+  const navLinks: NavLink[] = [
     { name: 'Overview & API', href: '/dashboard' },
     { name: 'Upload Menu', href: '/dashboard/menu' },
     { name: 'Manual Billing', href: '/dashboard/billing' },
