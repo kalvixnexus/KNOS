@@ -77,8 +77,8 @@ export default function DineInOrdersPage() {
     
     try {
       const subTotal = selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0);
-      const gstAmount = (subTotal * gstPercentage) / 100;
-      const total = subTotal + gstAmount;
+      const gstAmount = parseFloat(((subTotal * gstPercentage) / 100).toFixed(2));
+      const total = Math.round(subTotal + gstAmount);
 
       await addDoc(collection(db, 'bills'), {
         userId,
@@ -202,7 +202,7 @@ export default function DineInOrdersPage() {
               )}
               <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t border-gray-700">
                 <span className="text-yellow-500">TOTAL:</span>
-                <span className="text-yellow-500">₹{parseFloat((selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * (1 + gstPercentage / 100)).toFixed(2))}</span>
+                <span className="text-yellow-500">₹{Math.round(selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * (1 + gstPercentage / 100))}</span>
               </div>
             </div>
             
@@ -215,60 +215,91 @@ export default function DineInOrdersPage() {
 
       {/* Thermal Receipt Print Area */}
       {selectedOrder && (
-        <div className="w-80 bg-white border border-gray-300 p-4 shadow-lg printable-receipt font-mono text-sm mx-auto h-fit text-black hidden-until-print">
-          <div className="text-center font-bold text-xl mb-3 uppercase">{restaurantName}</div>
-          <div className="border-b border-dashed border-gray-400 mb-2"></div>
-          <div className="text-center mb-2">
-            <span className="border border-black px-2 py-1 font-bold text-lg">TABLE {selectedOrder.tableNo}</span>
-          </div>
-          <div className="mb-1 uppercase"><strong>Customer:</strong> {selectedOrder.customerName}</div>
-          {selectedOrder.customerPhone && <div className="mb-1"><strong>Phone:</strong> {selectedOrder.customerPhone}</div>}
-          <div className="mb-1"><strong>Invoice No:</strong> {invoicePrefix}-{invoiceNo}</div>
-          <div className="mb-2">
-            <strong>Date:</strong> <span suppressHydrationWarning>{new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}</span>
-          </div>
-          <div className="mb-2 uppercase"><strong>Payment:</strong> {selectedOrder.paymentMode}</div>
-          <div className="border-b border-dashed border-gray-400 mb-2"></div>
+        <div className="bg-white printable-receipt font-mono text-black hidden-until-print" style={{ width: '80mm', padding: '5mm', margin: '0 auto' }}>
           
-          <table className="w-full text-left mb-2">
-            <thead>
-              <tr className="border-b border-gray-300">
-                <th className="pb-1 font-normal">Item</th>
-                <th className="pb-1 font-normal text-center">Qty</th>
-                <th className="pb-1 font-normal text-right">Amt</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selectedOrder.items.map((item: any) => (
-                <tr key={item.id}>
-                  <td className="py-1">{item.name}</td>
-                  <td className="py-1 text-center">{item.qty}</td>
-                  <td className="py-1 text-right">₹{item.price * item.qty}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="text-center font-bold text-2xl mb-1 uppercase tracking-widest">{restaurantName}</div>
+          <div className="text-center text-xs mb-3">TAX INVOICE</div>
           
-          <div className="border-b border-dashed border-gray-400 mt-2 mb-2"></div>
+          <div className="border-b-2 border-dashed border-black mb-3"></div>
           
-          <div className="flex justify-between text-sm mb-1">
-            <span>Subtotal:</span>
-            <span>₹{selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0)}</span>
-          </div>
-          {gstPercentage > 0 && (
-            <div className="flex justify-between text-sm mb-2">
-              <span>GST ({gstPercentage}%):</span>
-              <span>₹{parseFloat(((selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * gstPercentage) / 100).toFixed(2))}</span>
+          <div className="text-center mb-3">
+            <div className="inline-block border-2 border-black px-4 py-1 font-black text-xl tracking-widest">
+              TABLE {selectedOrder.tableNo}
             </div>
-          )}
-          
-          <div className="flex justify-between font-bold text-lg border-t border-dashed border-gray-400 pt-2">
-            <span>TOTAL:</span>
-            <span>₹{parseFloat((selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * (1 + gstPercentage / 100)).toFixed(2))}</span>
           </div>
-          <div className="border-b border-dashed border-gray-400 mt-2 mb-4"></div>
-          <div className="text-center mt-2 text-xs font-bold">Thank you for dining with us!</div>
-          <div className="text-center mt-4 text-[10px] text-gray-500 uppercase tracking-widest">Bill Generated by Kalvix Nexus POS</div>
+          
+          <div className="text-xs space-y-1 mb-3">
+            <div className="flex justify-between">
+              <span className="font-bold">Date:</span>
+              <span suppressHydrationWarning>{new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-bold">Invoice:</span>
+              <span>{invoicePrefix}-{invoiceNo}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-bold">Customer:</span>
+              <span className="uppercase">{selectedOrder.customerName}</span>
+            </div>
+            {selectedOrder.customerPhone && (
+              <div className="flex justify-between">
+                <span className="font-bold">Phone:</span>
+                <span>{selectedOrder.customerPhone}</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="font-bold">Payment:</span>
+              <span className="uppercase">{selectedOrder.paymentMode}</span>
+            </div>
+          </div>
+          
+          <div className="border-b-2 border-dashed border-black mb-2"></div>
+          
+          {/* Table Header */}
+          <div className="flex text-xs font-bold mb-2 pb-1 border-b border-black">
+            <div className="flex-[3]">ITEM</div>
+            <div className="flex-1 text-center">QTY</div>
+            <div className="flex-[1.5] text-right">AMT</div>
+          </div>
+          
+          {/* Items */}
+          <div className="text-xs space-y-2 mb-3">
+            {selectedOrder.items.map((item: any) => (
+              <div key={item.id} className="flex items-start">
+                <div className="flex-[3] pr-2 leading-tight uppercase">{item.name}</div>
+                <div className="flex-1 text-center">{item.qty}</div>
+                <div className="flex-[1.5] text-right">₹{item.price * item.qty}</div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="border-b-2 border-dashed border-black mb-2"></div>
+          
+          {/* Totals */}
+          <div className="text-sm space-y-1 mb-2">
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span>₹{selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0)}</span>
+            </div>
+            {gstPercentage > 0 && (
+              <div className="flex justify-between">
+                <span>GST ({gstPercentage}%)</span>
+                <span>₹{parseFloat(((selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * gstPercentage) / 100).toFixed(2))}</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-between font-black text-xl border-t-2 border-black pt-2 mb-4">
+            <span>TOTAL</span>
+            <span>₹{Math.round(selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * (1 + gstPercentage / 100))}</span>
+          </div>
+          
+          <div className="text-center mt-6 text-xs font-bold uppercase tracking-widest">
+            Thank You For Dining With Us!
+          </div>
+          <div className="text-center mt-2 text-[9px] text-gray-500 uppercase tracking-widest">
+            Powered by Kalvix Nexus POS
+          </div>
         </div>
       )}
 

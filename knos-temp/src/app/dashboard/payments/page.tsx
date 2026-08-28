@@ -27,10 +27,10 @@ export default function PaymentHistoryPage() {
 
   if (loading) return <div className="text-white p-8">Loading payments...</div>;
 
-  const totalRevenue = bills.reduce((acc, bill) => acc + (bill.total || 0), 0);
-  const totalCash = bills.filter(b => b.paymentMode === 'Cash').reduce((acc, bill) => acc + (bill.total || 0), 0);
-  const totalUPI = bills.filter(b => b.paymentMode === 'UPI').reduce((acc, bill) => acc + (bill.total || 0), 0);
-  const totalCard = bills.filter(b => b.paymentMode === 'Card').reduce((acc, bill) => acc + (bill.total || 0), 0);
+  const totalRevenue = Math.round(bills.reduce((acc, bill) => acc + (bill.total || 0), 0));
+  const totalCash = Math.round(bills.filter(b => b.paymentMode === 'Cash').reduce((acc, bill) => acc + (bill.total || 0), 0));
+  const totalUPI = Math.round(bills.filter(b => b.paymentMode === 'UPI').reduce((acc, bill) => acc + (bill.total || 0), 0));
+  const totalCard = Math.round(bills.filter(b => b.paymentMode === 'Card').reduce((acc, bill) => acc + (bill.total || 0), 0));
 
   return (
     <div className="max-w-6xl">
@@ -91,7 +91,7 @@ export default function PaymentHistoryPage() {
                       {bill.paymentMode || 'Cash'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 font-bold text-white text-right">₹{bill.total}</td>
+                  <td className="px-6 py-4 font-bold text-white text-right">₹{Math.round(bill.total)}</td>
                 </tr>
               ))
             )}

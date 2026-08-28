@@ -103,7 +103,7 @@ export default function APIBilling() {
     try {
       const subTotal = selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0);
       const gstAmount = parseFloat(((subTotal * gstPercentage) / 100).toFixed(2));
-      const total = parseFloat((subTotal + gstAmount).toFixed(2));
+      const total = Math.round(subTotal + gstAmount);
 
       // 1. Save to standard bills history
       await addDoc(collection(db, 'bills'), {
@@ -223,7 +223,7 @@ export default function APIBilling() {
               )}
               <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t border-gray-700">
                 <span className="text-yellow-500">TOTAL:</span>
-                <span className="text-yellow-500">₹{parseFloat((selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * (1 + gstPercentage / 100)).toFixed(2))}</span>
+                <span className="text-yellow-500">₹{Math.round(selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * (1 + gstPercentage / 100))}</span>
               </div>
             </div>
 
@@ -293,7 +293,7 @@ export default function APIBilling() {
           
           <div className="flex justify-between font-bold text-lg border-t border-dashed border-gray-400 pt-2">
             <span>TOTAL:</span>
-            <span>₹{parseFloat((selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * (1 + gstPercentage / 100)).toFixed(2))}</span>
+            <span>₹{Math.round(selectedOrder.items.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0) * (1 + gstPercentage / 100))}</span>
           </div>
           <div className="border-b border-dashed border-gray-400 mt-2 mb-4"></div>
           <div className="text-center mt-2 text-xs font-bold">Thank you for ordering online!</div>

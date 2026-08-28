@@ -64,11 +64,18 @@ export default function BillHistoryPage() {
                   <td className="p-4">
                     <button 
                       onClick={() => setSelectedBill(bill)}
-                      className="text-yellow-500 hover:text-yellow-400 font-bold flex items-center gap-2"
+                      className="text-yellow-500 hover:text-yellow-400 font-bold flex flex-col sm:flex-row items-start sm:items-center gap-2"
                     >
-                      {bill.invoiceNo}
+                      <span>{bill.invoiceNo}</span>
+                      
                       {bill.source === 'API' && (
                         <span className="bg-blue-500/20 text-blue-400 text-[10px] px-2 py-0.5 rounded uppercase tracking-widest border border-blue-500/30">API</span>
+                      )}
+                      {bill.source?.startsWith('QR') && (
+                        <span className="bg-orange-500/20 text-orange-400 text-[10px] px-2 py-0.5 rounded uppercase tracking-widest border border-orange-500/30 whitespace-nowrap">{bill.source}</span>
+                      )}
+                      {(!bill.source || bill.source === 'Manual') && (
+                        <span className="bg-gray-700/50 text-gray-400 text-[10px] px-2 py-0.5 rounded uppercase tracking-widest border border-gray-600/50">Manual</span>
                       )}
                     </button>
                   </td>
@@ -81,7 +88,7 @@ export default function BillHistoryPage() {
                       {bill.items?.length || 0} items
                     </span>
                   </td>
-                  <td className="px-6 py-4 font-bold text-white">₹{bill.total}</td>
+                  <td className="px-6 py-4 font-bold text-white">₹{Math.round(bill.total)}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded text-xs font-bold ${
                       bill.paymentMode === 'Cash' ? 'bg-green-500/20 text-green-400' :
@@ -166,7 +173,7 @@ export default function BillHistoryPage() {
                 ) : null}
                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-800/50">
                   <span className="text-gray-400 uppercase tracking-widest text-sm font-bold">Total Amount</span>
-                  <span className="text-2xl font-black text-yellow-500">₹{selectedBill.total}</span>
+                  <span className="text-2xl font-black text-yellow-500">₹{Math.round(selectedBill.total)}</span>
                 </div>
               </div>
             </div>
