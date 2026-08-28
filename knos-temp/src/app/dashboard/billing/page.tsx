@@ -348,7 +348,8 @@ export default function ManualBilling() {
         @media print {
           body * { visibility: hidden; }
           .hide-on-print { display: none !important; }
-          .printable-receipt, .printable-receipt * { visibility: visible; display: block !important; }
+          .printable-receipt { visibility: visible; display: block !important; }
+          .printable-receipt * { visibility: visible; }
           .printable-receipt { 
             position: absolute; 
             left: 0; 
